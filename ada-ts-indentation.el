@@ -22,6 +22,7 @@
 ;;; Code:
 
 (require 'ada-ts-als)
+(require 'ada-ts-common)
 (require 'cl-generic)
 (require 'treesit)
 (eval-when-compile (require 'rx))
@@ -40,10 +41,6 @@
 (declare-function treesit-query-expand             "treesit.c" (query))
 (declare-function treesit-query-compile            "treesit.c" (language query &optional eager))
 (declare-function treesit-search-subtree           "treesit.c" (node predicate &optional backward all depth))
-
-(defvar ada-ts-mode--keywords)
-(declare-function ada-ts-mode--defun-name   "ada-ts-mode" (node))
-(declare-function ada-ts-mode--node-to-name "ada-ts-mode" (node))
 
 (defcustom ada-ts-mode-indent-backend 'tree-sitter
   "Backend used for indentation."
