@@ -535,7 +535,8 @@ but it isn't an actual function call."
          (not (string-equal parent-node-type "generic_instantiation"))
          (not (string-equal parent-node-type "assignment_statement"))
          (let ((function-name (ada-ts-mode--node-to-name
-                               (treesit-node-child-by-field-name node "name"))))
+                               (treesit-node-child-by-field-name node "name")
+                               'no-property)))
            (not (string-suffix-p ".all" function-name 'ignore-case))))))
 
 (defun ada-ts-mode--named-procedure-call-p (node)
@@ -543,7 +544,8 @@ but it isn't an actual function call."
   (let ((node-type (treesit-node-type node)))
     (and (string-equal node-type "procedure_call_statement")
          (let ((procedure-name (ada-ts-mode--node-to-name
-                                (treesit-node-child-by-field-name node "name"))))
+                                (treesit-node-child-by-field-name node "name")
+                                'no-property)))
            (not (string-suffix-p ".all" procedure-name 'ignore-case))))))
 
 (defun ada-ts-mode--mode-in-p (node)
@@ -570,7 +572,7 @@ but it isn't an actual function call."
   "Create comment box for defun enclosing point, if exists."
   (interactive nil ada-ts-mode)
   (when-let* ((defun-node (treesit-defun-at-point))
-              (defun-name (treesit-defun-name defun-node))
+              (defun-name (ada-ts-mode--defun-name defun-node 'no-property))
               (defun-start (treesit-node-start defun-node))
               (defun-bol
                (save-excursion

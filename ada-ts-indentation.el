@@ -1599,12 +1599,13 @@ If LSP region formatting fails, fallback on tree-sitter indentation."
                              "subprogram_body"
                              "task_body"
                              "task_type_declaration"))
-                   (ada-ts-mode--defun-name node))
+                   (ada-ts-mode--defun-name node 'no-property))
                   ((string-equal node-t "block_statement")
                    (let ((first-child-node (treesit-node-child node 0)))
                      (when (string-equal (treesit-node-type first-child-node) "loop_label")
                        (ada-ts-mode--node-to-name
-                        (treesit-node-child-by-field-name first-child-node "statement_identifier")))))
+                        (treesit-node-child-by-field-name first-child-node "statement_identifier")
+                        'no-property))))
                   (t (throw 'not-applicable nil))))
            (endname
             (let ((node node))
@@ -1637,7 +1638,7 @@ If LSP region formatting fails, fallback on tree-sitter indentation."
                           (next-node (ada-ts-mode--next-node end-node))
                           (next-node-t (treesit-node-type next-node))
                           ((member next-node-t '("identifier" "selected_component"))))
-                (ada-ts-mode--node-to-name next-node)))))
+                (ada-ts-mode--node-to-name next-node 'no-property)))))
       (when ada-ts-mode--indent-verbose
         (message "NAME: %s" name)
         (message "ENDNAME: %s" endname))

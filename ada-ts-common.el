@@ -165,17 +165,73 @@ Return non-nil to indicate that it is."
 
 ;;;; Node Name Utilities
 
-(defun ada-ts-mode--node-to-name (node)
-  "Return value of NODE as a name string."
+(defun ada-ts-mode--adjust-text-properties (value)
+  "Adjust text properties of VALUE string for use outside the buffer.
+
+Replace faces in VALUE text properties which are locally remapped.  The
+face is substituted with its replacement from `face-remapping-alist'
+allowing the string to be displayed with the same attributes outside of
+the current buffer.
+
+When no face is specified, use the default foreground face.  This can be
+helpful when VALUE is displayed outside the buffer with some other
+default foreground face.
+
+When the default face is specified, use only the foreground attribute
+from the face.  This can be helpful when VALUE is displayed outside the
+buffer where use of the default face's background attribute could
+interfere with other display mechanisms, such as selection highlighting.
+
+All non-face text properties are stripped from VALUE."
+  (letrec ((new-value (substring-no-properties value))
+           (len (length new-value))
+           (pos 0)
+           (adjust-face
+            (lambda (face)
+              (cond
+               ;; List of faces
+               ((and (consp face)
+                     (not (keywordp (car face))))
+                (seq-map adjust-face face))
+               ;; No face
+               ((null face)
+                (list :foreground (face-foreground 'default)))
+               ;; Remapped face
+               ((and (symbolp face)
+                     (buffer-local-boundp 'face-remapping-alist (current-buffer))
+                     (alist-get face face-remapping-alist)))
+               ;; Default face
+               ((and (symbolp face)
+                     (eq face 'default))
+                (list :foreground (face-foreground 'default)))
+               ;; Everything else
+               (t face)))))
+    (while (< pos len)
+      (let* ((next (next-single-property-change pos 'face value len))
+             (face (get-text-property pos 'face value))
+             (modified-face (funcall adjust-face face)))
+        (put-text-property pos next 'face modified-face new-value)
+        (setq pos next)))
+    new-value))
+
+(defun ada-ts-mode--node-to-name (node &optional no-property)
+  "Return value of NODE as a name string.
+
+If optional argument NO-PROPERTY is non-nil, remove text properties."
   (pcase (treesit-node-type node)
     ((or "identifier" "string_literal")
-     (treesit-node-text node t))
+     (if no-property
+         (treesit-node-text node 'no-property)
+       (font-lock-ensure (treesit-node-start node) (treesit-node-end node))
+       (ada-ts-mode--adjust-text-properties (treesit-node-text node))))
     ("selected_component"
      (string-join
       (append (ensure-list (ada-ts-mode--node-to-name
-                            (treesit-node-child-by-field-name node "prefix")))
+                            (treesit-node-child-by-field-name node "prefix")
+                            no-property))
               (list (ada-ts-mode--node-to-name
-                     (treesit-node-child-by-field-name node "selector_name"))))
+                     (treesit-node-child-by-field-name node "selector_name")
+                     no-property)))
       treesit-add-log-defun-delimiter))))
 
 ;;;; Declaration Names
@@ -191,9 +247,12 @@ Return non-nil to indicate that it is."
 
 ;;;; Defun Names
 
-(defun ada-ts-mode--defun-name (node)
+(defun ada-ts-mode--defun-name (node &optional no-property)
   "Return the defun name of NODE.
-Return nil if there is no name or if NODE is not a defun node."
+
+Return nil if there is no name or if NODE is not a defun node.
+
+If optional argument NO-PROPERTY is non-nil, remove text properties."
   (ada-ts-mode--node-to-name
    (pcase (treesit-node-type node)
      ((or "expression_function_declaration"
@@ -251,7 +310,8 @@ Return nil if there is no name or if NODE is not a defun node."
               (let ((node-type (treesit-node-type n)))
                 (string-equal "identifier" node-type))))))
      ("subunit"
-      (treesit-node-child-by-field-name node "parent_unit_name")))))
+      (treesit-node-child-by-field-name node "parent_unit_name")))
+   no-property))
 
 (provide 'ada-ts-common)
 
