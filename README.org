@@ -507,6 +507,34 @@ instead.
   buffer-locally to avoid impacting settings outside of ~ada-ts-mode~
   buffers.
 
+A set of customizations have also been provided for ~eglot~ semantic
+highlighting.  For ~lsp-mode~, similar customizations are part of the
+~lsp-mode~ package itself.
+
+- User Option: ada-ts-lspclient-eglot-semantic-token-types ::
+  An ~ada-ts-mode~ version of ~eglot~'s ~eglot-semantic-token-types~
+  setting.  The global value of ~eglot-semantic-token-types~ is
+  overridden with this user option to determine the buffer-local
+  value.  Only token types provided in this list are used for semantic
+  highlighting in ~ada-ts-mode~ buffers.  Other token types not
+  specified are ignored.
+
+- User Option: ada-ts-lspclient-eglot-semantic-token-modifiers ::
+  An ~ada-ts-mode~ version of ~eglot~'s ~eglot-semantic-token-modifiers~
+  setting.  The global value of ~eglot-semantic-token-modifiers~ is
+  overridden with this user option to determine the buffer-local
+  value.  Only token modifiers provided in this list are used for
+  semantic highlighting in ~ada-ts-mode~ buffers.  Other token modifiers
+  not specified are ignored.
+
+- User Option: ada-ts-lspclient-eglot-semantic-token-face-overrides ::
+  An attribute list of ~eglot~ semantic token type and semantic token
+  modifier face overrides.  The ~eglot~ provided face settings for
+  semantic token types and semantic token modifiers can be overridden
+  with different faces or attributes of faces in ~ada-ts-mode~ buffers.
+  Semantic token types and semantic token modifiers not listed will
+  retain their default faces as specified in the ~eglot~ package.
+
 ** Adding Support for an Additional LSP Client
 
 In order to integrate functionality provided by the Ada Language

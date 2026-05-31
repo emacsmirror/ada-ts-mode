@@ -47,6 +47,50 @@
   :link '(custom-manual :tag "LSP Client Support" "(ada-ts-mode)LSP Client Support")
   :package-version '(ada-ts-mode . "0.9.0"))
 
+(defcustom ada-ts-lspclient-eglot-semantic-token-types
+  (when (default-boundp 'eglot-semantic-token-types)
+    (default-value 'eglot-semantic-token-types))
+  "Mode specific settings for Eglot's `eglot-semantic-token-types'."
+  :type '(repeat string)
+  :group 'ada-ts-lspclient
+  :link '(custom-manual :tag "LSP Client Support" "(ada-ts-mode)LSP Client Support")
+  :package-version '(ada-ts-mode . "0.9.0"))
+
+(defcustom ada-ts-lspclient-eglot-semantic-token-modifiers
+  '("readonly" "deprecated")
+  "Mode specific settings for Eglot's `eglot-semantic-token-modifiers'."
+  :type '(repeat string)
+  :group 'ada-ts-lspclient
+  :link '(custom-manual :tag "LSP Client Support" "(ada-ts-mode)LSP Client Support")
+  :package-version '(ada-ts-mode . "0.9.0"))
+
+(defcustom ada-ts-lspclient-eglot-semantic-token-face-overrides
+  '(("namespace" . ((:foreground . default)))
+    ("modifier"  . font-lock-keyword-face))
+  "Mode specific overrides for Eglot's semantic token faces.
+
+Each override should be of the form (TOKEN . SETTING), where TOKEN is a
+string naming the semantic token type or semantic token modifier.
+
+SETTING may be a symbol representing a face name, in which case the
+entire face is inherited by the corresponding semantic token type or
+semantic token modifier face.
+
+SETTING may also be an attribute list of the form (ATTRIBUTE . FACE),
+where ATTRIBUTE is a face attribute keyword and FACE is a symbol
+representing the face from which to inherit the ATTRIBUTE.  The
+corresponding semantic token type or semantic token modifier face will
+consist of a list of inherited attributes from the corresponding faces."
+  :type '(alist :key-type (string :tag "Semantic Token Name")
+                :value-type (choice (face :tag "Face Name")
+                                    (alist :key-type (symbol :tag "Face Attribute")
+                                           :value-type (face :tag "Face Name")
+                                           :tag "Face Attributes"))
+                :tag "Semantic Token Face Overrides")
+  :group 'ada-ts-lspclient
+  :link '(custom-manual :tag "LSP Client Support" "(ada-ts-mode)LSP Client Support")
+  :package-version '(ada-ts-mode . "0.9.0"))
+
 ;;;; LSP Client Support
 
 (defun ada-ts-lspclient-eglot-try ()
@@ -200,7 +244,25 @@ included if the mode configuration must be added."
   (when ada-ts-lspclient-eglot-ignored-server-capabilities
     (setq-local eglot-ignored-server-capabilities
                 (seq-union (default-value 'eglot-ignored-server-capabilities)
-                           ada-ts-lspclient-eglot-ignored-server-capabilities))))
+                           ada-ts-lspclient-eglot-ignored-server-capabilities)))
+  (when (default-boundp 'eglot-semantic-token-types)
+    (setq-local eglot-semantic-token-types ada-ts-lspclient-eglot-semantic-token-types))
+  (when (default-boundp 'eglot-semantic-token-modifiers)
+    (setq-local eglot-semantic-token-modifiers ada-ts-lspclient-eglot-semantic-token-modifiers))
+  (dolist (override ada-ts-lspclient-eglot-semantic-token-face-overrides)
+    (when-let* ((token (car override))
+                (setting (cdr override))
+                (token-face (intern-soft (concat "eglot-semantic-" token))))
+      (if (symbolp setting)
+          (face-remap-set-base token-face `(:inherit ,setting))
+        (face-remap-set-base
+         token-face
+         (flatten-list
+          (seq-map (lambda (override)
+                     (let ((attribute (car override))
+                           (face (cdr override)))
+                       (list attribute (face-attribute face attribute))))
+                   setting)))))))
 
 (add-hook 'ada-ts-lspclient-setup-hook #'ada-ts-lspclient-eglot--setup)
 

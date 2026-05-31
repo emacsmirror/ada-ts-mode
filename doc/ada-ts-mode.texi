@@ -634,6 +634,37 @@ buffer-locally to avoid impacting settings outside of @code{ada-ts-mode}
 buffers.
 @end defopt
 
+A set of customizations have also been provided for @code{eglot} semantic
+highlighting.  For @code{lsp-mode}, similar customizations are part of the
+@code{lsp-mode} package itself.
+
+@defopt ada-ts-lspclient-eglot-semantic-token-types
+An @code{ada-ts-mode} version of @code{eglot}'s @code{eglot-semantic-token-types}
+setting.  The global value of @code{eglot-semantic-token-types} is
+overridden with this user option to determine the buffer-local
+value.  Only token types provided in this list are used for semantic
+highlighting in @code{ada-ts-mode} buffers.  Other token types not
+specified are ignored.
+@end defopt
+
+@defopt ada-ts-lspclient-eglot-semantic-token-modifiers
+An @code{ada-ts-mode} version of @code{eglot}'s @code{eglot-semantic-token-modifiers}
+setting.  The global value of @code{eglot-semantic-token-modifiers} is
+overridden with this user option to determine the buffer-local
+value.  Only token modifiers provided in this list are used for
+semantic highlighting in @code{ada-ts-mode} buffers.  Other token modifiers
+not specified are ignored.
+@end defopt
+
+@defopt ada-ts-lspclient-eglot-semantic-token-face-overrides
+An attribute list of @code{eglot} semantic token type and semantic token
+modifier face overrides.  The @code{eglot} provided face settings for
+semantic token types and semantic token modifiers can be overridden
+with different faces or attributes of faces in @code{ada-ts-mode} buffers.
+Semantic token types and semantic token modifiers not listed will
+retain their default faces as specified in the @code{eglot} package.
+@end defopt
+
 @menu
 * Adding Support for an Additional LSP Client::
 @end menu

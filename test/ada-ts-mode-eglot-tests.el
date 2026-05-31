@@ -184,6 +184,27 @@ Emacs 29) did not support it."
       (should (equal (symbol-value 'eglot-ignored-server-capabilities)
                      '(:documentOnTypeFormattingProvider))))))
 
+(ert-deftest ada-ts-mode-test-eglot-setup-semantic-highlight ()
+  "Tests that Eglot semantic highlighting is setup correctly for `ada-ts-mode'."
+  (skip-unless (and (ada-ts-lspclient-eglot--find-mode-config 'ada-ts-mode)
+                    (executable-find "ada_language_server")
+                    (default-boundp 'eglot-semantic-token-types)))
+  (with-file-in-project
+      "hello_world.adb"
+      (ert-resource-file "hello_world")
+      "hello_world.gpr"
+    (with-language-server eglot
+      (should (local-variable-p 'eglot-semantic-token-types))
+      (should (equal (symbol-value 'eglot-semantic-token-types)
+                     ada-ts-lspclient-eglot-semantic-token-types))
+      (should (local-variable-p 'eglot-semantic-token-modifiers))
+      (should (equal (symbol-value 'eglot-semantic-token-modifiers)
+                     ada-ts-lspclient-eglot-semantic-token-modifiers))
+      (should (local-variable-p 'face-remapping-alist))
+      (dolist (token (mapcar #'car ada-ts-lspclient-eglot-semantic-token-face-overrides))
+        (should (alist-get (intern (concat "eglot-semantic-" token))
+                           face-remapping-alist))))))
+
 (ert-deftest ada-ts-mode-test-eglot-formatting ()
   "Test LSP request 'textDocument/formatting'."
   (skip-unless (executable-find "ada_language_server"))
