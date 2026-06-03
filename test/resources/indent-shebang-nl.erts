@@ -1,0 +1,14 @@
+Code: (lambda ()
+        (default-transform 'expect-error)
+        (ada-ts-mode-tests--simulate-key-press "RET"))
+
+Name: Newline after shebang
+
+Point-Char: |
+
+=-=
+#! /usr/bin/env hac|
+=-=
+#! /usr/bin/env hac
+|
+=-=-=

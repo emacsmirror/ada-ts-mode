@@ -1159,6 +1159,17 @@ total offset."
       (setq anchor (ada-ts-indent--point-at-indentation anchor-node)
             offset ada-ts-mode-indent-broken-offset
             scenario "Scenario [Punctuation: '(']"))
+    ;; Newline after shebang
+    (when-let* (((not anchor))
+                ((not node))
+                (prev-leaf-node (ada-ts-mode--prev-leaf-node bol))
+                (bol-pos (ada-ts-indent--point-at-indentation prev-leaf-node))
+                ((save-excursion
+                   (goto-char bol-pos)
+                   (looking-at-p (rx "#!")))))
+      (setq anchor bol-pos
+            offset 0
+            scenario "Scenario [Newline after shebang]"))
     ;; Newline after identifer/selected_component
     (when-let* (((not anchor))
                 ((not node))
@@ -1283,6 +1294,16 @@ total offset."
       (setq anchor (ada-ts-indent--point-at-indentation prev-node)
             offset 0
             scenario "Scenario [After Compilation Unit / Declaration / Statement]"))
+    ;; After shebang
+    (when-let* (((not anchor))
+                (prev-leaf-node (ada-ts-mode--prev-leaf-node bol))
+                (bol-pos (ada-ts-indent--point-at-indentation prev-leaf-node))
+                ((save-excursion
+                   (goto-char bol-pos)
+                   (looking-at-p (rx "#!")))))
+      (setq anchor bol-pos
+            offset 0
+            scenario "Scenario [After shebang]"))
     ;; Fallback
     (unless anchor
       (setq scenario "Scenario [fallback]")

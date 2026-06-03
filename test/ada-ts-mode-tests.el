@@ -76,11 +76,11 @@ perform custom initialization."
     (let* ((actual-menu (filter-menu (funcall imenu-create-index-function))))
       (should (equal menu actual-menu)))))
 
-(defun indent-transform (&optional setup)
+(defun indent-transform (&optional setup expect-error)
   "Indent transform function for test.
 
 SETUP can be used to perform custom initialization."
-  (default-transform nil setup)
+  (default-transform expect-error setup)
   (cl-letf (((symbol-function 'ada-ts-mode--anchor-catch-all)
              (lambda ()
                (lambda (node parent bol &rest _)
